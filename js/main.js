@@ -288,8 +288,8 @@ class FlipbookApp {
         this.btnPrev.addEventListener('click', () => this.pageFlip.flipPrev());
         this.btnNext.addEventListener('click', () => this.pageFlip.flipNext());
         
-        this.btnSidePrev.addEventListener('click', () => this.pageFlip.flipPrev());
-        this.btnSideNext.addEventListener('click', () => this.pageFlip.flipNext());
+        if (this.btnSidePrev) this.btnSidePrev.addEventListener('click', () => this.pageFlip.flipPrev());
+        if (this.btnSideNext) this.btnSideNext.addEventListener('click', () => this.pageFlip.flipNext());
         
         this.btnFirst.addEventListener('click', () => this.pageFlip.turnToPage(0));
         this.btnLast.addEventListener('click', () => this.pageFlip.turnToPage(this.totalPages - 1));

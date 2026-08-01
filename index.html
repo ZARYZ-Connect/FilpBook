@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Company Profile</title>
+    
+    <!-- CSS Dependencies -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Loading Screen Overlay -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <div class="loader-text">Loading Profile...</div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Top Header -->
+        <header class="app-header">
+            <div class="header-logo">
+                <img src="assets/images/logo.png" alt="Zaryz Logo" class="logo-img">
+            </div>
+            <div class="header-search">
+                <input type="text" placeholder="Search">
+                <i class="fas fa-search"></i>
+            </div>
+        </header>
+
+        <!-- Main Flipbook Area -->
+        <main class="flipbook-wrapper" id="flipbook-container">
+            <!-- Large Side Navigation -->
+            <button class="side-nav-btn left" id="btn-side-prev" title="Previous Page">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="flipbook" id="flipbook">
+                <!-- StPageFlip Canvas will be injected here automatically -->
+            </div>
+
+            <!-- Large Side Navigation -->
+            <button class="side-nav-btn right" id="btn-side-next" title="Next Page">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </main>
+        <div id="lightbox" class="lightbox hidden">
+            <button class="lightbox-close" id="lightbox-close">&times;</button>
+            <img src="" alt="Zoomed Page" class="lightbox-img" id="lightbox-img">
+        </div>
+
+        <!-- Thumbnails Overview Overlay -->
+        <div id="thumbnails-overlay" class="thumbnails-overlay hidden">
+            <button class="thumbnails-close" id="thumbnails-close">&times;</button>
+            <div class="thumbnails-track" id="thumbnails-track">
+                <!-- Thumbnails will be injected here by JS -->
+            </div>
+        </div>
+
+        <!-- Full-width Bottom Footer -->
+        <footer class="app-footer">
+            <div class="footer-left">
+                <button id="btn-home" class="control-btn" title="Home">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button id="btn-thumbnails" class="control-btn" title="View All Pages">
+                    <i class="fas fa-th-large"></i>
+                </button>
+                <button id="btn-sound" class="control-btn" title="Toggle Sound">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+            </div>
+            <div class="footer-center">
+                <button id="btn-first" class="control-btn" title="First Page">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button id="btn-prev" class="control-btn" title="Previous Page">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="page-indicator">
+                    <span id="page-current">-</span> / <span id="page-total">14</span>
+                </div>
+                <button id="btn-next" class="control-btn" title="Next Page">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button id="btn-last" class="control-btn" title="Last Page">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+            </div>
+            <div class="footer-right">
+                <button id="btn-fullscreen" class="control-btn" title="Toggle Fullscreen">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- StPageFlip Library -->
+    <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -137,15 +137,19 @@ body {
 
 /* Book Depth & Realism */
 .flipbook {
-    box-shadow: var(--book-shadow);
     border-radius: 4px;
-    background: transparent; /* Changed from dark color to make closed covers look like single pages */
+    background: transparent;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* In Canvas mode, StPageFlip handles page shadows internally.
-   We just need to ensure the canvas looks like a solid physical object. */
 .st-page {
     background-color: #ffffff;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+}
+
+.stf__wrapper, .stf__parent, .stf__block, .stf__item {
+    background: transparent !important;
+    background-color: transparent !important;
 }
 
 /* Page Content removed as Canvas handles image rendering */

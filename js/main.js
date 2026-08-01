@@ -7,6 +7,7 @@ class FlipbookApp {
         this.totalPages = 14;
         this.imagesFolderPath = 'assets/images/';
         this.flipbookEl = document.getElementById('flipbook');
+        this.scaleWrapperEl = document.getElementById('flipbook-scale-wrapper');
         this.wrapperEl = document.getElementById('flipbook-container');
         this.loadingScreen = document.getElementById('loading-screen');
         
@@ -207,6 +208,31 @@ class FlipbookApp {
     }
 
     initPageFlip() {
+        // Build HTML pages dynamically for HTML mode
+        this.flipbookEl.innerHTML = '';
+        this.resolvedImageUrls.forEach((url, i) => {
+            const pageDiv = document.createElement('div');
+            pageDiv.className = 'st-page';
+            
+            // Set data-density="hard" for cover and back cover
+            if (i === 0 || i === this.resolvedImageUrls.length - 1) {
+                pageDiv.setAttribute('data-density', 'hard');
+            } else {
+                pageDiv.setAttribute('data-density', 'soft');
+            }
+            
+            const img = document.createElement('img');
+            img.src = url;
+            img.className = 'page-image';
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'contain';
+            img.style.pointerEvents = 'none'; // Prevent drag issues during flip
+            
+            pageDiv.appendChild(img);
+            this.flipbookEl.appendChild(pageDiv);
+        });
+
         this.pageFlip = new St.PageFlip(this.flipbookEl, {
             width: 550, 
             height: 778, 
@@ -220,8 +246,8 @@ class FlipbookApp {
             usePortrait: true 
         });
 
-        // Use Canvas mode for realistic physics and lighting
-        this.pageFlip.loadFromImages(this.resolvedImageUrls);
+        // Use HTML mode instead of Canvas mode
+        this.pageFlip.loadFromHTML(this.flipbookEl.querySelectorAll('.st-page'));
         
         // Allow the DOM to render before applying scale to ensure clientWidth is accurate
         setTimeout(() => this.resizeToFit(), 50);
@@ -241,12 +267,25 @@ class FlipbookApp {
         
         let bookWidth = 550 * 2;
         let bookHeight = 778;
+        let translateX = '-50%';
         
         if (this.pageFlip.getOrientation() === 'portrait') {
             bookWidth = 550;
             // Less extreme margins on mobile portrait so it remains readable
             availableWidth = wrapper.clientWidth - 40;
             if (availableWidth <= 0) availableWidth = window.innerWidth - 40;
+        } else {
+            // Landscape (double page) mode: center closed cover page
+            const currentPage = this.pageFlip.getCurrentPageIndex();
+            const totalPages = this.totalPages;
+            
+            if (currentPage === 0) {
+                // Front cover: shift right by 25% of book width (since it renders on the left half)
+                translateX = '-25%';
+            } else if (currentPage === totalPages - 1) {
+                // Back cover: shift left by 25% of book width (since it renders on the right half)
+                translateX = '-75%';
+            }
         }
         
         // Calculate the exact mathematical scale to fit perfectly
@@ -261,29 +300,13 @@ class FlipbookApp {
             scale = maxBookWidth / bookWidth;
         }
         
-        // Calculate dynamic X translation to perfectly center closed covers
-        let translateX = -50; // Default: Spine in the exact center of screen
+        // Apply CSS transform to the scale wrapper element for flawless, unclipped centering
+        this.scaleWrapperEl.style.position = 'absolute';
+        this.scaleWrapperEl.style.left = '50%';
+        this.scaleWrapperEl.style.top = '50%';
+        this.scaleWrapperEl.style.transform = `translate(${translateX}, -50%) scale(${scale})`;
+        this.scaleWrapperEl.style.transformOrigin = 'center center';
         
-        if (this.pageFlip.getOrientation() === 'landscape') {
-            const currentIndex = this.pageFlip.getCurrentPageIndex();
-            if (currentIndex === 0) {
-                // Front Cover: Shift left so the right-half (cover) is dead center
-                translateX = -75;
-            } else if (currentIndex === this.totalPages - 1) {
-                // Back Cover: Shift right so the left-half (back cover) is dead center
-                translateX = -25;
-            }
-        }
-        
-        // Apply CSS transform to the flipbook element for flawless, unclipped centering
-        this.flipbookEl.style.position = 'absolute';
-        this.flipbookEl.style.left = '50%';
-        this.flipbookEl.style.top = '50%';
-        this.flipbookEl.style.transform = `translate(${translateX}%, -50%) scale(${scale})`;
-        this.flipbookEl.style.transformOrigin = 'center center';
-        
-        // Add a smooth transition so it slides beautifully when opening/closing
-        this.flipbookEl.style.transition = 'transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)';
     }
 
     bindEvents() {
@@ -392,17 +415,17 @@ class FlipbookApp {
             
             // If movement is minimal, it's a click, not a page turn drag
             if (dx < 10 && dy < 10) {
-                // In canvas mode, determine which page they clicked based on coordinates
-                const canvas = this.flipbookEl.querySelector('canvas');
-                if (e.target === canvas) {
-                    const rect = canvas.getBoundingClientRect();
-                    const clickX = e.clientX - rect.left;
+                const rect = this.scaleWrapperEl.getBoundingClientRect();
+                // Check if click was inside the book container bounds
+                if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                    e.clientY >= rect.top && e.clientY <= rect.bottom) {
                     
+                    const clickX = e.clientX - rect.left;
                     let pageIndex = this.pageFlip.getCurrentPageIndex();
                     const orientation = this.pageFlip.getOrientation();
                     
-                    if (orientation === 'landscape') {
-                        // Left or right side of the canvas?
+                    if (orientation === 'landscape' && pageIndex > 0 && pageIndex < this.totalPages - 1) {
+                        // Left or right side of the book?
                         if (clickX > rect.width / 2) {
                             pageIndex += 1; // Clicked right page
                         }

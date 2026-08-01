@@ -35,11 +35,18 @@
 
         <!-- Main Flipbook Area -->
         <main class="flipbook-wrapper" id="flipbook-container">
+            <!-- Side Navigation Buttons -->
+            <button class="side-nav-btn left" id="btn-side-first" title="Flip to Front Page (Page 1)">
+                <i class="fas fa-step-backward"></i>
+            </button>
             <div id="flipbook-scale-wrapper" style="position: absolute; left: 50%; top: 50%; transform-origin: center center; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);">
                 <div class="flipbook" id="flipbook">
                     <!-- HTML Pages will be injected here automatically -->
                 </div>
             </div>
+            <button class="side-nav-btn right" id="btn-side-last" title="Flip to Last Page (Page 14)">
+                <i class="fas fa-step-forward"></i>
+            </button>
         </main>
         <div id="lightbox" class="lightbox hidden">
             <button class="lightbox-close" id="lightbox-close">&times;</button>

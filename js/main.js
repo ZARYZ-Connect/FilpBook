@@ -29,8 +29,11 @@ class FlipbookApp {
         this.thumbnailsClose = document.getElementById('thumbnails-close');
         
         // New UI Elements
+        this.btnHome = document.getElementById('btn-home');
         this.btnFirst = document.getElementById('btn-first');
         this.btnLast = document.getElementById('btn-last');
+        this.btnSideFirst = document.getElementById('btn-side-first');
+        this.btnSideLast = document.getElementById('btn-side-last');
         this.btnSound = document.getElementById('btn-sound');
         
         this.pageFlip = null;
@@ -193,13 +196,13 @@ class FlipbookApp {
         if (!this.pageFlip) return;
         
         const wrapper = this.wrapperEl;
-        // Enforce generous margins so it never looks like a standard webpage
-        let availableWidth = wrapper.clientWidth - 160; 
-        let availableHeight = wrapper.clientHeight - 120;
+        // Use sleek 30px margins for maximum book size
+        let availableWidth = wrapper.clientWidth - 40; 
+        let availableHeight = wrapper.clientHeight - 30;
         
         // Fallback if called before CSS layout resolves completely
-        if (availableWidth <= 0) availableWidth = window.innerWidth - 160;
-        if (availableHeight <= 0) availableHeight = window.innerHeight - 160;
+        if (availableWidth <= 0) availableWidth = window.innerWidth - 40;
+        if (availableHeight <= 0) availableHeight = window.innerHeight - 80;
         
         let bookWidth = 550 * 2;
         let bookHeight = 778;
@@ -207,34 +210,30 @@ class FlipbookApp {
         
         if (this.pageFlip.getOrientation() === 'portrait') {
             bookWidth = 550;
-            // Less extreme margins on mobile portrait so it remains readable
-            availableWidth = wrapper.clientWidth - 40;
-            if (availableWidth <= 0) availableWidth = window.innerWidth - 40;
+            availableWidth = wrapper.clientWidth - 20;
+            if (availableWidth <= 0) availableWidth = window.innerWidth - 20;
         } else {
-            // Landscape (double page) mode: scale wrapper stays centered at -50%
-            // StPageFlip handles single cover vs double spread alignment internally
             translateX = '-50%';
         }
         
-        // Calculate the exact mathematical scale to fit perfectly
+        // Calculate scale to maximize display area
         let scale = Math.min(
             availableWidth / bookWidth,
             availableHeight / bookHeight
         );
         
-        // Prevent the book from exceeding a premium catalogue width (~1200px)
-        const maxBookWidth = 1200;
+        // Allow ultra high-res large display (up to 1800px width spread)
+        const maxBookWidth = 1800;
         if (bookWidth * scale > maxBookWidth) {
             scale = maxBookWidth / bookWidth;
         }
         
-        // Apply CSS transform to the scale wrapper element for flawless, unclipped centering
+        // Apply CSS transform to scale wrapper element
         this.scaleWrapperEl.style.position = 'absolute';
         this.scaleWrapperEl.style.left = '50%';
         this.scaleWrapperEl.style.top = '50%';
         this.scaleWrapperEl.style.transform = `translate(${translateX}, -50%) scale(${scale})`;
         this.scaleWrapperEl.style.transformOrigin = 'center center';
-        
     }
 
     bindEvents() {
@@ -274,12 +273,18 @@ class FlipbookApp {
         // Initial state
         this.pageCurrent.textContent = this.pageFlip.getCurrentPageIndex() + 1;
 
-        // Button Controls
+        // Button Controls - Previous / Next
         this.btnPrev.addEventListener('click', () => this.pageFlip.flipPrev());
         this.btnNext.addEventListener('click', () => this.pageFlip.flipNext());
         
-        this.btnFirst.addEventListener('click', () => this.pageFlip.turnToPage(0));
-        this.btnLast.addEventListener('click', () => this.pageFlip.turnToPage(this.totalPages - 1));
+        // Home & First page -> Flip to Front Cover (Page 1)
+        if (this.btnHome) this.btnHome.addEventListener('click', () => this.pageFlip.turnToPage(0));
+        if (this.btnFirst) this.btnFirst.addEventListener('click', () => this.pageFlip.turnToPage(0));
+        if (this.btnSideFirst) this.btnSideFirst.addEventListener('click', () => this.pageFlip.turnToPage(0));
+
+        // Last page -> Flip to Page 14 (Back Cover)
+        if (this.btnLast) this.btnLast.addEventListener('click', () => this.pageFlip.turnToPage(this.totalPages - 1));
+        if (this.btnSideLast) this.btnSideLast.addEventListener('click', () => this.pageFlip.turnToPage(this.totalPages - 1));
 
         // Sound Toggle
         this.btnSound.addEventListener('click', () => {

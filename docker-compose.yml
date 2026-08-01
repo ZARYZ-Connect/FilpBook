@@ -3,7 +3,8 @@ version: '3.8'
 services:
   flipbook:
     build: .
-    container_name: zaryz_flipbook
+    container_name: zaryz_deck_flipbook
     restart: always
     ports:
-      - "80:80"
+      - "8088:80"
+

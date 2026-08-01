@@ -27,9 +27,9 @@
             <div class="header-logo">
                 <img src="assets/images/logo.png" alt="Zaryz Logo" class="logo-img">
             </div>
-            <div class="header-search">
-                <input type="text" placeholder="Search">
-                <i class="fas fa-search"></i>
+            <div class="header-search" id="header-search-bar">
+                <input type="text" id="search-header-input" placeholder="Search" autocomplete="off">
+                <i class="fas fa-search" id="search-header-icon"></i>
             </div>
         </header>
 
@@ -54,6 +54,25 @@
             <button class="lightbox-close" id="lightbox-close">&times;</button>
             <img src="" alt="Zoomed Page" class="lightbox-img" id="lightbox-img">
         </div>
+
+        <!-- Search Panel (slides in from left like reference) -->
+        <div id="search-panel" class="search-panel">
+            <div class="search-panel-header">
+                <div class="search-panel-title">
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                </div>
+                <button id="search-panel-close" class="search-panel-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="search-input-wrap">
+                <input type="text" id="search-panel-input" placeholder="Type to search..." autocomplete="off">
+                <button id="search-panel-btn"><i class="fas fa-search"></i></button>
+            </div>
+            <div id="search-results-container" class="search-results-container">
+                <!-- Results injected by JS -->
+            </div>
+        </div>
+        <div id="search-panel-backdrop" class="search-panel-backdrop"></div>
 
         <!-- Thumbnails Overview Overlay -->
         <div id="thumbnails-overlay" class="thumbnails-overlay hidden">

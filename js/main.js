@@ -145,6 +145,8 @@ class FlipbookApp {
         this.buildThumbnails();
         this.bindEvents();
         
+        this.initSearch();
+
         // Hide loader after a tiny delay for smooth transition
         setTimeout(() => {
             this.loadingScreen.classList.add('hidden');
@@ -510,6 +512,185 @@ class FlipbookApp {
     openLightbox(src) {
         this.lightboxImg.src = src;
         this.lightbox.classList.remove('hidden');
+    }
+
+    /* =====================================================
+       SEARCH FUNCTIONALITY
+       ===================================================== */
+    initSearch() {
+        // Keyword index: each entry maps keywords/phrases to the page index (0-based)
+        // These are extracted from the actual visual content of each page
+        this.searchIndex = [
+            // Page 1 — Front Cover
+            { page: 0, label: 'Page 1 – Cover', text: 'Zaryz Solutions LLP Company Profile empowering businesses digitally intelligently technology innovation' },
+            // Page 2 — About / Services overview
+            { page: 1, label: 'Page 2 – About', text: 'About Zaryz digital transformation technology solutions enterprise IT services Bangalore India since 2024 75 clients 55 industry' },
+            // Page 3 — IT Infrastructure
+            { page: 2, label: 'Page 3 – IT Infrastructure', text: 'IT infrastructure server networking hardware cloud computing structured cabling firewall router switch Wi-Fi enterprise solutions' },
+            // Page 4 — ERP & Software
+            { page: 3, label: 'Page 4 – ERP & Software', text: 'ERP enterprise resource planning software development custom web application mobile app cloud integration automation workflow' },
+            // Page 5 — Surveillance / CCTV
+            { page: 4, label: 'Page 5 – Surveillance', text: 'surveillance CCTV NVR DVR Wi-Fi cameras 24/7 monitoring security biometric access control' },
+            // Page 6 — Creative Design & Printing
+            { page: 5, label: 'Page 6 – Creative Design & Printing', text: 'creative design printing ID cards access badges business cards brochures invitation event materials custom stationery brand identity' },
+            // Page 7 — Mobility & Telecom
+            { page: 6, label: 'Page 7 – Mobility & Telecom', text: 'mobility solutions device management custom mobile apps mobile security connectivity 5G Wi-Fi telecom infrastructure fiber network wireless global' },
+            // Page 8 — Biometric & Intercom
+            { page: 7, label: 'Page 8 – Biometric & Intercom', text: 'biometric installation HRMS integration attendance tracking Zoho Keka HR access control intercom wired wireless video CCTV NVR DVR' },
+            // Page 9 — Products
+            { page: 8, label: 'Page 9 – Products', text: 'products HR management system visitor management system attendance payroll biometric check-in facility analytics enterprise software' },
+            // Page 10 — More Products
+            { page: 9, label: 'Page 10 – Products cont.', text: 'operation management ticket management service management SLA real-time tracking intelligent automation IT requests facility services' },
+            // Page 11 — Contact
+            { page: 10, label: 'Page 11 – Contact', text: 'contact us phone +91 90353 50053 email hello@zaryz.com website www.zaryz.com address MHB Nagar Bannerghatta Main Road Bangalore 560083' },
+            // Page 12 — Thank You
+            { page: 11, label: 'Page 12 – Thank You', text: 'thank you empowering businesses digitally intelligently ZARYZ SOLUTIONS LLP innovate integrate elevate www.zaryz.com hello@zaryz.com Bangalore India' },
+            // Pages 13-14 — Back Cover / End
+            { page: 12, label: 'Page 13 – Back', text: 'back cover Zaryz Solutions LLP technology solutions' },
+            { page: 13, label: 'Page 14 – Back Cover', text: 'back cover end Zaryz Solutions LLP company profile' },
+        ];
+
+        // Cache DOM refs
+        const panel        = document.getElementById('search-panel');
+        const backdrop     = document.getElementById('search-panel-backdrop');
+        const closeBtn     = document.getElementById('search-panel-close');
+        const panelInput   = document.getElementById('search-panel-input');
+        const panelBtn     = document.getElementById('search-panel-btn');
+        const resultsBox   = document.getElementById('search-results-container');
+        const headerInput  = document.getElementById('search-header-input');
+        const headerIcon   = document.getElementById('search-header-icon');
+
+        const openPanel = () => {
+            panel.classList.add('open');
+            backdrop.classList.add('open');
+            // Mirror header input value → panel input
+            panelInput.value = headerInput.value;
+            panelInput.focus();
+            if (panelInput.value.trim()) this.performSearch(panelInput.value.trim(), resultsBox);
+            else this.renderSearchPrompt(resultsBox);
+        };
+
+        const closePanel = () => {
+            panel.classList.remove('open');
+            backdrop.classList.remove('open');
+        };
+
+        // Open on header input focus or icon click
+        headerInput.addEventListener('focus', openPanel);
+        headerInput.addEventListener('click', openPanel);
+        headerIcon.addEventListener('click', openPanel);
+
+        // Close handlers
+        closeBtn.addEventListener('click', closePanel);
+        backdrop.addEventListener('click', closePanel);
+
+        // Sync header input → panel input
+        headerInput.addEventListener('input', () => {
+            panelInput.value = headerInput.value;
+            const q = headerInput.value.trim();
+            if (q) this.performSearch(q, resultsBox);
+            else this.renderSearchPrompt(resultsBox);
+        });
+
+        // Live search from panel input
+        panelInput.addEventListener('input', () => {
+            headerInput.value = panelInput.value;
+            const q = panelInput.value.trim();
+            if (q) this.performSearch(q, resultsBox);
+            else this.renderSearchPrompt(resultsBox);
+        });
+
+        // Button search
+        panelBtn.addEventListener('click', () => {
+            const q = panelInput.value.trim();
+            if (q) this.performSearch(q, resultsBox);
+        });
+
+        panelInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const q = panelInput.value.trim();
+                if (q) this.performSearch(q, resultsBox);
+            }
+        });
+
+        // Initial state
+        this.renderSearchPrompt(resultsBox);
+    }
+
+    renderSearchPrompt(container) {
+        container.innerHTML = `<div class="search-prompt">Type a keyword to find pages</div>`;
+    }
+
+    highlightText(text, query) {
+        if (!query) return text;
+        const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(`(${escaped})`, 'gi');
+        return text.replace(re, '<span class="search-highlight">$1</span>');
+    }
+
+    performSearch(query, container) {
+        const q = query.toLowerCase().trim();
+        const matches = [];
+
+        for (const entry of this.searchIndex) {
+            if (entry.text.toLowerCase().includes(q)) {
+                // Build a snippet around the match
+                const lText = entry.text.toLowerCase();
+                const idx = lText.indexOf(q);
+                const start = Math.max(0, idx - 40);
+                const end = Math.min(entry.text.length, idx + q.length + 80);
+                let snippet = (start > 0 ? '…' : '') + entry.text.slice(start, end) + (end < entry.text.length ? '…' : '');
+                matches.push({ page: entry.page, label: entry.label, snippet });
+            }
+        }
+
+        if (matches.length === 0) {
+            container.innerHTML = `
+                <div class="search-empty">
+                    <i class="fas fa-search-minus"></i>
+                    No results found for "${this.escHtml(query)}"
+                </div>`;
+            return;
+        }
+
+        let html = `<div class="search-found-count">Found <span class="found-num">${matches.length}</span> page${matches.length !== 1 ? 's' : ''}</div>`;
+
+        for (const m of matches) {
+            const highlightedSnippet = this.highlightText(this.escHtml(m.snippet), this.escHtml(query));
+            html += `
+            <div class="search-result-item" data-page="${m.page}">
+                <div class="search-result-page">
+                    <span class="pg-badge">Pg ${m.page + 1}</span>
+                    ${this.escHtml(m.label)}
+                </div>
+                <div class="search-result-snippet">${highlightedSnippet}</div>
+            </div>`;
+        }
+
+        container.innerHTML = html;
+
+        // Bind click-to-navigate
+        container.querySelectorAll('.search-result-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const pageIdx = parseInt(item.dataset.page, 10);
+                if (this.pageFlip) {
+                    this.pageFlip.flip(pageIdx);
+                }
+                // Close panel on mobile
+                if (window.innerWidth < 768) {
+                    document.getElementById('search-panel').classList.remove('open');
+                    document.getElementById('search-panel-backdrop').classList.remove('open');
+                }
+            });
+        });
+    }
+
+    escHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
     }
 }
 

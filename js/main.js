@@ -268,61 +268,71 @@ class FlipbookApp {
 
     bindEvents() {
         // Thumbnails Modal Toggle
-        this.btnThumbnails.addEventListener('click', () => {
-            this.thumbnailsOverlay.classList.remove('hidden');
-        });
+        if (this.btnThumbnails) {
+            this.btnThumbnails.addEventListener('click', () => {
+                if (this.thumbnailsOverlay) this.thumbnailsOverlay.classList.remove('hidden');
+            });
+        }
         
-        this.thumbnailsClose.addEventListener('click', () => {
-            this.thumbnailsOverlay.classList.add('hidden');
-        });
+        if (this.thumbnailsClose) {
+            this.thumbnailsClose.addEventListener('click', () => {
+                if (this.thumbnailsOverlay) this.thumbnailsOverlay.classList.add('hidden');
+            });
+        }
         
-        this.thumbnailsOverlay.addEventListener('click', (e) => {
-            if (e.target === this.thumbnailsOverlay) {
-                this.thumbnailsOverlay.classList.add('hidden');
-            }
-        });
+        if (this.thumbnailsOverlay) {
+            this.thumbnailsOverlay.addEventListener('click', (e) => {
+                if (e.target === this.thumbnailsOverlay) {
+                    this.thumbnailsOverlay.classList.add('hidden');
+                }
+            });
+        }
 
         // Handle window resizing to recalculate strict boundaries
         window.addEventListener('resize', () => {
             this.resizeToFit();
         });
 
-        // Play sound precisely when the page starts to flip
-        this.pageFlip.on('changeState', (e) => {
-            if (e.data === 'flipping') {
-                this.playFlipSound();
-            }
-        });
+        if (this.pageFlip) {
+            // Play sound precisely when the page starts to flip
+            this.pageFlip.on('changeState', (e) => {
+                if (e.data === 'flipping') {
+                    this.playFlipSound();
+                }
+            });
 
-        // Page Flip Event (updates UI when flip finishes)
-        this.pageFlip.on('flip', (e) => {
-            this.updatePageIndicator(e ? e.data : null);
-            this.resizeToFit();
-        });
+            // Page Flip Event (updates UI when flip finishes)
+            this.pageFlip.on('flip', (e) => {
+                this.updatePageIndicator(e ? e.data : null);
+                this.resizeToFit();
+            });
+        }
         
         // Initial state
         this.updatePageIndicator();
 
         // Button Controls - Previous / Next
-        this.btnPrev.addEventListener('click', () => this.pageFlip.flipPrev());
-        this.btnNext.addEventListener('click', () => this.pageFlip.flipNext());
+        if (this.btnPrev) this.btnPrev.addEventListener('click', () => this.pageFlip && this.pageFlip.flipPrev());
+        if (this.btnNext) this.btnNext.addEventListener('click', () => this.pageFlip && this.pageFlip.flipNext());
         
         // Home & First page -> Flip to Front Cover (Page 1)
-        if (this.btnHome) this.btnHome.addEventListener('click', () => this.pageFlip.turnToPage(0));
-        if (this.btnFirst) this.btnFirst.addEventListener('click', () => this.pageFlip.turnToPage(0));
+        if (this.btnHome) this.btnHome.addEventListener('click', () => this.pageFlip && this.pageFlip.turnToPage(0));
+        if (this.btnFirst) this.btnFirst.addEventListener('click', () => this.pageFlip && this.pageFlip.turnToPage(0));
 
         // Last page -> Flip to Page 14 (Back Cover)
-        if (this.btnLast) this.btnLast.addEventListener('click', () => this.pageFlip.turnToPage(this.totalPages - 1));
+        if (this.btnLast) this.btnLast.addEventListener('click', () => this.pageFlip && this.pageFlip.turnToPage(this.totalPages - 1));
 
         // Sound Toggle
-        this.btnSound.addEventListener('click', () => {
-            this.soundEnabled = !this.soundEnabled;
-            if (this.soundEnabled) {
-                this.btnSound.innerHTML = '<i class="fas fa-volume-up"></i>';
-            } else {
-                this.btnSound.innerHTML = '<i class="fas fa-volume-mute"></i>';
-            }
-        });
+        if (this.btnSound) {
+            this.btnSound.addEventListener('click', () => {
+                this.soundEnabled = !this.soundEnabled;
+                if (this.soundEnabled) {
+                    this.btnSound.innerHTML = '<i class="fas fa-volume-up"></i>';
+                } else {
+                    this.btnSound.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                }
+            });
+        }
 
         // Keyboard Controls
         document.addEventListener('keydown', (e) => {
@@ -361,51 +371,56 @@ class FlipbookApp {
     bindLightboxEvents() {
         let startX, startY;
         
-        // Track pointer down to detect if it's a drag or a click
-        this.flipbookEl.addEventListener('mousedown', (e) => {
-            startX = e.clientX;
-            startY = e.clientY;
-        }, true);
-        
-        this.flipbookEl.addEventListener('mouseup', (e) => {
-            const dx = Math.abs(e.clientX - startX);
-            const dy = Math.abs(e.clientY - startY);
+        if (this.flipbookEl) {
+            // Track pointer down to detect if it's a drag or a click
+            this.flipbookEl.addEventListener('mousedown', (e) => {
+                startX = e.clientX;
+                startY = e.clientY;
+            }, true);
             
-            // If movement is minimal, it's a click, not a page turn drag
-            if (dx < 10 && dy < 10) {
-                const rect = this.scaleWrapperEl.getBoundingClientRect();
-                // Check if click was inside the book container bounds
-                if (e.clientX >= rect.left && e.clientX <= rect.right &&
-                    e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                    
-                    const clickX = e.clientX - rect.left;
-                    let pageIndex = this.pageFlip.getCurrentPageIndex();
-                    const orientation = this.pageFlip.getOrientation();
-                    
-                    if (orientation === 'landscape' && pageIndex > 0 && pageIndex < this.totalPages - 1) {
-                        // Left or right side of the book?
-                        if (clickX > rect.width / 2) {
-                            pageIndex += 1; // Clicked right page
+            this.flipbookEl.addEventListener('mouseup', (e) => {
+                const dx = Math.abs(e.clientX - startX);
+                const dy = Math.abs(e.clientY - startY);
+                
+                // If movement is minimal, it's a click, not a page turn drag
+                if (dx < 10 && dy < 10) {
+                    if (!this.scaleWrapperEl || !this.pageFlip) return;
+                    const rect = this.scaleWrapperEl.getBoundingClientRect();
+                    // Check if click was inside the book container bounds
+                    if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                        e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                        
+                        const clickX = e.clientX - rect.left;
+                        let pageIndex = this.pageFlip.getCurrentPageIndex();
+                        const orientation = this.pageFlip.getOrientation();
+                        
+                        if (orientation === 'landscape' && pageIndex > 0 && pageIndex < this.totalPages - 1) {
+                            // Left or right side of the book?
+                            if (clickX > rect.width / 2) {
+                                pageIndex += 1; // Clicked right page
+                            }
+                        }
+                        
+                        if (pageIndex >= 0 && pageIndex < this.totalPages) {
+                            this.openLightbox(this.resolvedImageUrls[pageIndex]);
                         }
                     }
-                    
-                    if (pageIndex >= 0 && pageIndex < this.totalPages) {
-                        this.openLightbox(this.resolvedImageUrls[pageIndex]);
-                    }
                 }
-            }
-        }, true);
+            }, true);
+        }
 
         // Lightbox Close Logic
-        this.lightboxClose.addEventListener('click', () => {
-            this.lightbox.classList.add('hidden');
-        });
-
-        this.lightbox.addEventListener('click', (e) => {
-            if (e.target === this.lightbox) {
+        if (this.lightboxClose && this.lightbox) {
+            this.lightboxClose.addEventListener('click', () => {
                 this.lightbox.classList.add('hidden');
-            }
-        });
+            });
+
+            this.lightbox.addEventListener('click', (e) => {
+                if (e.target === this.lightbox) {
+                    this.lightbox.classList.add('hidden');
+                }
+            });
+        }
     }
 
     openLightbox(src) {

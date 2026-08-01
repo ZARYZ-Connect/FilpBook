@@ -51,37 +51,91 @@ class FlipbookApp {
         if (this.audioCtx.state === 'suspended') {
             this.audioCtx.resume();
         }
-        
-        const duration = 0.15;
-        const bufferSize = this.audioCtx.sampleRate * duration;
-        const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        
-        // Generate white noise for the paper rustle
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = Math.random() * 2 - 1;
+
+        const ctx = this.audioCtx;
+        const now = ctx.currentTime;
+        const master = ctx.createGain();
+        master.gain.setValueAtTime(0.55, now);
+        master.connect(ctx.destination);
+
+        // --- Layer 1: Paper Swish (main "whoosh" of page turning) ---
+        const swishDuration = 0.22;
+        const swishBuffer = ctx.createBuffer(1, ctx.sampleRate * swishDuration, ctx.sampleRate);
+        const swishData = swishBuffer.getChannelData(0);
+        for (let i = 0; i < swishData.length; i++) {
+            swishData[i] = Math.random() * 2 - 1;
         }
-        
-        const noiseSource = this.audioCtx.createBufferSource();
-        noiseSource.buffer = buffer;
-        
-        // Bandpass filter to isolate the paper-like mid-high frequencies
-        const filter = this.audioCtx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.value = 1500;
-        filter.Q.value = 0.5;
-        
-        // Envelope to give it a sharp attack and quick decay (crisp page turn)
-        const gainNode = this.audioCtx.createGain();
-        gainNode.gain.setValueAtTime(0, this.audioCtx.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.5, this.audioCtx.currentTime + 0.02); // quick attack
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + duration); // decay
-        
-        noiseSource.connect(filter);
-        filter.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-        
-        noiseSource.start();
+        const swishSource = ctx.createBufferSource();
+        swishSource.buffer = swishBuffer;
+
+        const swishHp = ctx.createBiquadFilter();
+        swishHp.type = 'highpass';
+        swishHp.frequency.value = 2800;
+        swishHp.Q.value = 0.8;
+
+        const swishBp = ctx.createBiquadFilter();
+        swishBp.type = 'bandpass';
+        swishBp.frequency.value = 1200;
+        swishBp.Q.value = 0.4;
+
+        const swishGain = ctx.createGain();
+        swishGain.gain.setValueAtTime(0, now);
+        swishGain.gain.linearRampToValueAtTime(0.8, now + 0.012);
+        swishGain.gain.linearRampToValueAtTime(0.5, now + 0.09);
+        swishGain.gain.exponentialRampToValueAtTime(0.001, now + swishDuration);
+
+        swishSource.connect(swishHp);
+        swishHp.connect(swishBp);
+        swishBp.connect(swishGain);
+        swishGain.connect(master);
+        swishSource.start(now);
+
+        // --- Layer 2: Paper Snap / Landing Thud ---
+        const snapBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
+        const snapData = snapBuffer.getChannelData(0);
+        for (let i = 0; i < snapData.length; i++) {
+            snapData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.02));
+        }
+        const snapSource = ctx.createBufferSource();
+        snapSource.buffer = snapBuffer;
+
+        const snapLp = ctx.createBiquadFilter();
+        snapLp.type = 'lowpass';
+        snapLp.frequency.value = 600;
+        snapLp.Q.value = 1.5;
+
+        const snapGain = ctx.createGain();
+        snapGain.gain.setValueAtTime(0.6, now + 0.16);
+        snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+
+        snapSource.connect(snapLp);
+        snapLp.connect(snapGain);
+        snapGain.connect(master);
+        snapSource.start(now + 0.16);
+
+        // --- Layer 3: High-Frequency Paper Edge Rustle ---
+        const rustleBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.18, ctx.sampleRate);
+        const rustleData = rustleBuffer.getChannelData(0);
+        for (let i = 0; i < rustleData.length; i++) {
+            rustleData[i] = Math.random() * 2 - 1;
+        }
+        const rustleSource = ctx.createBufferSource();
+        rustleSource.buffer = rustleBuffer;
+
+        const rustleBp = ctx.createBiquadFilter();
+        rustleBp.type = 'bandpass';
+        rustleBp.frequency.value = 5500;
+        rustleBp.Q.value = 1.2;
+
+        const rustleGain = ctx.createGain();
+        rustleGain.gain.setValueAtTime(0, now);
+        rustleGain.gain.linearRampToValueAtTime(0.3, now + 0.008);
+        rustleGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+        rustleSource.connect(rustleBp);
+        rustleBp.connect(rustleGain);
+        rustleGain.connect(master);
+        rustleSource.start(now);
     }
 
     async init() {

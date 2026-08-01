@@ -211,19 +211,9 @@ class FlipbookApp {
             availableWidth = wrapper.clientWidth - 40;
             if (availableWidth <= 0) availableWidth = window.innerWidth - 40;
         } else {
-            // Landscape (double page) mode: center closed cover page
-            const currentPage = this.pageFlip.getCurrentPageIndex();
-            const totalPages = this.totalPages;
-            
-            if (currentPage === 0) {
-                // Front cover renders on the RIGHT half of the double container
-                // So shift left by 75% to center it on screen
-                translateX = '-75%';
-            } else if (currentPage === totalPages - 1) {
-                // Back cover renders on the LEFT half of the double container
-                // So shift right by 25% (only -25%) to center it on screen
-                translateX = '-25%';
-            }
+            // Landscape (double page) mode: scale wrapper stays centered at -50%
+            // StPageFlip handles single cover vs double spread alignment internally
+            translateX = '-50%';
         }
         
         // Calculate the exact mathematical scale to fit perfectly
@@ -287,9 +277,6 @@ class FlipbookApp {
         // Button Controls
         this.btnPrev.addEventListener('click', () => this.pageFlip.flipPrev());
         this.btnNext.addEventListener('click', () => this.pageFlip.flipNext());
-        
-        if (this.btnSidePrev) this.btnSidePrev.addEventListener('click', () => this.pageFlip.flipPrev());
-        if (this.btnSideNext) this.btnSideNext.addEventListener('click', () => this.pageFlip.flipNext());
         
         this.btnFirst.addEventListener('click', () => this.pageFlip.turnToPage(0));
         this.btnLast.addEventListener('click', () => this.pageFlip.turnToPage(this.totalPages - 1));

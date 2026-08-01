@@ -226,7 +226,8 @@ class FlipbookApp {
             img.className = 'page-image';
             img.style.width = '100%';
             img.style.height = '100%';
-            img.style.objectFit = 'contain';
+            img.style.objectFit = 'fill';
+            img.style.display = 'block';
             img.style.pointerEvents = 'none'; // Prevent drag issues during flip
             
             pageDiv.appendChild(img);
@@ -239,17 +240,17 @@ class FlipbookApp {
             size: "fixed",
             drawShadow: true,
             maxShadowOpacity: 0.8,
-            showPageCorners: true, // Enables ultra-realistic hovering curl effect
+            showPageCorners: true,
             showCover: true,
             mobileScrollSupport: false,
-            flippingTime: 1100, // Slightly slower for majestic inertia feel
-            usePortrait: true 
+            flippingTime: 1100,
+            usePortrait: false  // Force landscape (two-page spread) mode always
         });
 
         // Use HTML mode instead of Canvas mode
         this.pageFlip.loadFromHTML(this.flipbookEl.querySelectorAll('.st-page'));
         
-        // Allow the DOM to render before applying scale to ensure clientWidth is accurate
+        // Allow the DOM to render before applying scale
         setTimeout(() => this.resizeToFit(), 50);
     }
 
@@ -280,11 +281,13 @@ class FlipbookApp {
             const totalPages = this.totalPages;
             
             if (currentPage === 0) {
-                // Front cover: shift right by 25% of book width (since it renders on the left half)
-                translateX = '-25%';
-            } else if (currentPage === totalPages - 1) {
-                // Back cover: shift left by 25% of book width (since it renders on the right half)
+                // Front cover renders on the RIGHT half of the double container
+                // So shift left by 75% to center it on screen
                 translateX = '-75%';
+            } else if (currentPage === totalPages - 1) {
+                // Back cover renders on the LEFT half of the double container
+                // So shift right by 25% (only -25%) to center it on screen
+                translateX = '-25%';
             }
         }
         

@@ -133,44 +133,6 @@ body {
     transform: scale(1.05);
 }
 
-/* Side Navigation Buttons (First Page / Last Page) */
-.side-nav-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 90;
-    background: rgba(15, 23, 42, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.85);
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    cursor: pointer;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.side-nav-btn:hover {
-    background: rgba(37, 99, 235, 0.85);
-    border-color: rgba(255, 255, 255, 0.4);
-    color: #ffffff;
-    transform: translateY(-50%) scale(1.12);
-    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
-}
-
-.side-nav-btn.left {
-    left: 20px;
-}
-
-.side-nav-btn.right {
-    right: 20px;
-}
-
 /* Book Depth & Realism */
 .flipbook {
     border-radius: 4px;

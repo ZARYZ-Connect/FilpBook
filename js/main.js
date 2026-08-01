@@ -32,8 +32,6 @@ class FlipbookApp {
         this.btnHome = document.getElementById('btn-home');
         this.btnFirst = document.getElementById('btn-first');
         this.btnLast = document.getElementById('btn-last');
-        this.btnSideFirst = document.getElementById('btn-side-first');
-        this.btnSideLast = document.getElementById('btn-side-last');
         this.btnSound = document.getElementById('btn-sound');
         
         this.pageFlip = null;
@@ -306,11 +304,9 @@ class FlipbookApp {
         // Home & First page -> Flip to Front Cover (Page 1)
         if (this.btnHome) this.btnHome.addEventListener('click', () => this.pageFlip.turnToPage(0));
         if (this.btnFirst) this.btnFirst.addEventListener('click', () => this.pageFlip.turnToPage(0));
-        if (this.btnSideFirst) this.btnSideFirst.addEventListener('click', () => this.pageFlip.turnToPage(0));
 
         // Last page -> Flip to Page 14 (Back Cover)
         if (this.btnLast) this.btnLast.addEventListener('click', () => this.pageFlip.turnToPage(this.totalPages - 1));
-        if (this.btnSideLast) this.btnSideLast.addEventListener('click', () => this.pageFlip.turnToPage(this.totalPages - 1));
 
         // Sound Toggle
         this.btnSound.addEventListener('click', () => {

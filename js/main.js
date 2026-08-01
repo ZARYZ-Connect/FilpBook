@@ -236,25 +236,33 @@ class FlipbookApp {
         this.updatePageIndicator();
     }
 
-    updatePageIndicator() {
+    updatePageIndicator(pageIndex) {
         if (!this.pageFlip) return;
-        const page = this.pageFlip.getCurrentPageIndex();
+        const page = (typeof pageIndex === 'number' && !isNaN(pageIndex)) 
+            ? pageIndex 
+            : this.pageFlip.getCurrentPageIndex();
         const total = this.totalPages;
 
         if (this.pageFlip.getOrientation() === 'portrait') {
             this.pageCurrent.textContent = page + 1;
         } else {
-            if (page === 0) {
+            if (page <= 0) {
                 this.pageCurrent.textContent = '1';
-            } else if (page === total - 1) {
+            } else if (page >= total - 1) {
                 this.pageCurrent.textContent = `${total}`;
             } else {
-                const leftPage = page + 1;
-                const rightPage = Math.min(page + 2, total);
-                if (leftPage === rightPage) {
-                    this.pageCurrent.textContent = `${leftPage}`;
+                // Determine left page index of the 2-page spread
+                // Odd index (1, 3, 5...) is left page; Even index (2, 4, 6...) is right page
+                const leftIdx = (page % 2 === 1) ? page : page - 1;
+                const leftPageNum = leftIdx + 1;
+                const rightPageNum = Math.min(leftIdx + 2, total);
+                
+                if (leftPageNum >= total) {
+                    this.pageCurrent.textContent = `${total}`;
+                } else if (leftPageNum === rightPageNum) {
+                    this.pageCurrent.textContent = `${leftPageNum}`;
                 } else {
-                    this.pageCurrent.textContent = `${leftPage} - ${rightPage}`;
+                    this.pageCurrent.textContent = `${leftPageNum} - ${rightPageNum}`;
                 }
             }
         }
@@ -289,8 +297,8 @@ class FlipbookApp {
         });
 
         // Page Flip Event (updates UI when flip finishes)
-        this.pageFlip.on('flip', () => {
-            this.updatePageIndicator();
+        this.pageFlip.on('flip', (e) => {
+            this.updatePageIndicator(e ? e.data : null);
             this.resizeToFit();
         });
         

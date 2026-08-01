@@ -244,22 +244,20 @@ class FlipbookApp {
         const total = this.totalPages;
 
         if (this.pageFlip.getOrientation() === 'portrait') {
-            this.pageCurrent.textContent = page + 1;
+            this.pageCurrent.textContent = Math.min(page + 1, total);
         } else {
             if (page <= 0) {
                 this.pageCurrent.textContent = '1';
             } else if (page >= total - 1) {
                 this.pageCurrent.textContent = `${total}`;
             } else {
-                // Determine left page index of the 2-page spread
-                // Odd index (1, 3, 5...) is left page; Even index (2, 4, 6...) is right page
-                const leftIdx = (page % 2 === 1) ? page : page - 1;
-                const leftPageNum = leftIdx + 1;
-                const rightPageNum = Math.min(leftIdx + 2, total);
+                // Map internal StPageFlip page index to facing spread page numbers (e.g. 2 - 3, 4 - 5, 6 - 7...)
+                const leftPageNum = Math.floor((page + 1) / 2) * 2;
+                const rightPageNum = leftPageNum + 1;
                 
                 if (leftPageNum >= total) {
                     this.pageCurrent.textContent = `${total}`;
-                } else if (leftPageNum === rightPageNum) {
+                } else if (rightPageNum >= total) {
                     this.pageCurrent.textContent = `${leftPageNum}`;
                 } else {
                     this.pageCurrent.textContent = `${leftPageNum} - ${rightPageNum}`;

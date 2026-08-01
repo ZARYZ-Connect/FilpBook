@@ -5,7 +5,8 @@
 class FlipbookApp {
     constructor() {
         this.totalPages = 14;
-        this.imagesFolderPath = 'assets/images/';
+        this.imagesFolderPath = 'assets/images/compressed/';
+        this.imageExtension = '.jpg';
         this.flipbookEl = document.getElementById('flipbook');
         this.scaleWrapperEl = document.getElementById('flipbook-scale-wrapper');
         this.wrapperEl = document.getElementById('flipbook-container');
@@ -28,8 +29,6 @@ class FlipbookApp {
         this.thumbnailsClose = document.getElementById('thumbnails-close');
         
         // New UI Elements
-        this.btnSidePrev = document.getElementById('btn-side-prev');
-        this.btnSideNext = document.getElementById('btn-side-next');
         this.btnFirst = document.getElementById('btn-first');
         this.btnLast = document.getElementById('btn-last');
         this.btnSound = document.getElementById('btn-sound');
@@ -66,10 +65,10 @@ class FlipbookApp {
         
         this.initSearch();
 
-        // Hide loader after a tiny delay for smooth transition
+        // Hide loader quickly - no more waiting for image preloads
         setTimeout(() => {
             this.loadingScreen.classList.add('hidden');
-        }, 400);
+        }, 100);
     }
 
     buildThumbnails() {
@@ -134,52 +133,13 @@ class FlipbookApp {
     }
 
     resolveAllImages() {
-        return new Promise((resolve) => {
-            const tempUrls = new Array(this.totalPages);
-            let loadedCount = 0;
-            
-            const checkDone = () => {
-                loadedCount++;
-                if (loadedCount === this.totalPages) {
-                    // Filter out skipped or missing pages to compress the book
-                    this.resolvedImageUrls = tempUrls.filter(url => url !== null);
-                    this.totalPages = this.resolvedImageUrls.length;
-                    resolve();
-                }
-            };
-
-            for (let i = 0; i < this.totalPages; i++) {
-                const pageNumber = i + 1;
-                
-                const formats = [
-                    `Page ${pageNumber}.png`,
-                    `Page${pageNumber}.png`
-                ];
-                
-                let currentFormatIndex = 0;
-                const img = new Image();
-                
-                const tryNextFormat = () => {
-                    if (currentFormatIndex < formats.length) {
-                        img.src = encodeURI(`${this.imagesFolderPath}${formats[currentFormatIndex]}`);
-                        currentFormatIndex++;
-                    } else {
-                        // Skip if missing
-                        tempUrls[i] = null;
-                        checkDone();
-                    }
-                };
-
-                img.onload = () => {
-                    tempUrls[i] = img.src;
-                    checkDone();
-                };
-                
-                img.onerror = tryNextFormat;
-                
-                tryNextFormat();
-            }
-        });
+        // Instantly build the URL list from compressed JPEGs — no waiting for preload.
+        // This removes the 2+ minute wait caused by preloading 22 MB of PNGs.
+        this.resolvedImageUrls = [];
+        for (let i = 1; i <= this.totalPages; i++) {
+            this.resolvedImageUrls.push(`${this.imagesFolderPath}Page ${i}${this.imageExtension}`);
+        }
+        return Promise.resolve();
     }
 
     initPageFlip() {

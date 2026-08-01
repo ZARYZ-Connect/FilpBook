@@ -369,46 +369,6 @@ class FlipbookApp {
     }
 
     bindLightboxEvents() {
-        let startX, startY;
-        
-        if (this.flipbookEl) {
-            // Track pointer down to detect if it's a drag or a click
-            this.flipbookEl.addEventListener('mousedown', (e) => {
-                startX = e.clientX;
-                startY = e.clientY;
-            }, true);
-            
-            this.flipbookEl.addEventListener('mouseup', (e) => {
-                const dx = Math.abs(e.clientX - startX);
-                const dy = Math.abs(e.clientY - startY);
-                
-                // If movement is minimal, it's a click, not a page turn drag
-                if (dx < 10 && dy < 10) {
-                    if (!this.scaleWrapperEl || !this.pageFlip) return;
-                    const rect = this.scaleWrapperEl.getBoundingClientRect();
-                    // Check if click was inside the book container bounds
-                    if (e.clientX >= rect.left && e.clientX <= rect.right &&
-                        e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                        
-                        const clickX = e.clientX - rect.left;
-                        let pageIndex = this.pageFlip.getCurrentPageIndex();
-                        const orientation = this.pageFlip.getOrientation();
-                        
-                        if (orientation === 'landscape' && pageIndex > 0 && pageIndex < this.totalPages - 1) {
-                            // Left or right side of the book?
-                            if (clickX > rect.width / 2) {
-                                pageIndex += 1; // Clicked right page
-                            }
-                        }
-                        
-                        if (pageIndex >= 0 && pageIndex < this.totalPages) {
-                            this.openLightbox(this.resolvedImageUrls[pageIndex]);
-                        }
-                    }
-                }
-            }, true);
-        }
-
         // Lightbox Close Logic
         if (this.lightboxClose && this.lightbox) {
             this.lightboxClose.addEventListener('click', () => {

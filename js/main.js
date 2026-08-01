@@ -35,107 +35,26 @@ class FlipbookApp {
         this.btnSound = document.getElementById('btn-sound');
         
         this.pageFlip = null;
-        this.audioCtx = null;
         this.soundEnabled = true;
+        this.flipAudio = null; // will hold the preloaded Audio element
         
         this.init();
     }
 
     playFlipSound() {
         if (!this.soundEnabled) return;
-        
-        // Initialize Web Audio API on first use (requires user interaction to unlock)
-        if (!this.audioCtx) {
-            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (this.audioCtx.state === 'suspended') {
-            this.audioCtx.resume();
+
+        // Lazy-create the Audio element pointing to the real MP3
+        if (!this.flipAudio) {
+            this.flipAudio = new Audio('assets/audio/new-audio_nMRVg7h1.mp3');
+            this.flipAudio.preload = 'auto';
         }
 
-        const ctx = this.audioCtx;
-        const now = ctx.currentTime;
-        const master = ctx.createGain();
-        master.gain.setValueAtTime(0.55, now);
-        master.connect(ctx.destination);
-
-        // --- Layer 1: Paper Swish (main "whoosh" of page turning) ---
-        const swishDuration = 0.22;
-        const swishBuffer = ctx.createBuffer(1, ctx.sampleRate * swishDuration, ctx.sampleRate);
-        const swishData = swishBuffer.getChannelData(0);
-        for (let i = 0; i < swishData.length; i++) {
-            swishData[i] = Math.random() * 2 - 1;
-        }
-        const swishSource = ctx.createBufferSource();
-        swishSource.buffer = swishBuffer;
-
-        const swishHp = ctx.createBiquadFilter();
-        swishHp.type = 'highpass';
-        swishHp.frequency.value = 2800;
-        swishHp.Q.value = 0.8;
-
-        const swishBp = ctx.createBiquadFilter();
-        swishBp.type = 'bandpass';
-        swishBp.frequency.value = 1200;
-        swishBp.Q.value = 0.4;
-
-        const swishGain = ctx.createGain();
-        swishGain.gain.setValueAtTime(0, now);
-        swishGain.gain.linearRampToValueAtTime(0.8, now + 0.012);
-        swishGain.gain.linearRampToValueAtTime(0.5, now + 0.09);
-        swishGain.gain.exponentialRampToValueAtTime(0.001, now + swishDuration);
-
-        swishSource.connect(swishHp);
-        swishHp.connect(swishBp);
-        swishBp.connect(swishGain);
-        swishGain.connect(master);
-        swishSource.start(now);
-
-        // --- Layer 2: Paper Snap / Landing Thud ---
-        const snapBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
-        const snapData = snapBuffer.getChannelData(0);
-        for (let i = 0; i < snapData.length; i++) {
-            snapData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.02));
-        }
-        const snapSource = ctx.createBufferSource();
-        snapSource.buffer = snapBuffer;
-
-        const snapLp = ctx.createBiquadFilter();
-        snapLp.type = 'lowpass';
-        snapLp.frequency.value = 600;
-        snapLp.Q.value = 1.5;
-
-        const snapGain = ctx.createGain();
-        snapGain.gain.setValueAtTime(0.6, now + 0.16);
-        snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
-
-        snapSource.connect(snapLp);
-        snapLp.connect(snapGain);
-        snapGain.connect(master);
-        snapSource.start(now + 0.16);
-
-        // --- Layer 3: High-Frequency Paper Edge Rustle ---
-        const rustleBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.18, ctx.sampleRate);
-        const rustleData = rustleBuffer.getChannelData(0);
-        for (let i = 0; i < rustleData.length; i++) {
-            rustleData[i] = Math.random() * 2 - 1;
-        }
-        const rustleSource = ctx.createBufferSource();
-        rustleSource.buffer = rustleBuffer;
-
-        const rustleBp = ctx.createBiquadFilter();
-        rustleBp.type = 'bandpass';
-        rustleBp.frequency.value = 5500;
-        rustleBp.Q.value = 1.2;
-
-        const rustleGain = ctx.createGain();
-        rustleGain.gain.setValueAtTime(0, now);
-        rustleGain.gain.linearRampToValueAtTime(0.3, now + 0.008);
-        rustleGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-
-        rustleSource.connect(rustleBp);
-        rustleBp.connect(rustleGain);
-        rustleGain.connect(master);
-        rustleSource.start(now);
+        // Reset to start so overlapping fast flips always play from beginning
+        this.flipAudio.currentTime = 0;
+        this.flipAudio.play().catch(() => {
+            // Autoplay policy: ignore – user interaction already unlocks audio
+        });
     }
 
     async init() {

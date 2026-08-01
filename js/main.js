@@ -234,6 +234,32 @@ class FlipbookApp {
         this.scaleWrapperEl.style.top = '50%';
         this.scaleWrapperEl.style.transform = `translate(${translateX}, -50%) scale(${scale})`;
         this.scaleWrapperEl.style.transformOrigin = 'center center';
+        
+        this.updatePageIndicator();
+    }
+
+    updatePageIndicator() {
+        if (!this.pageFlip) return;
+        const page = this.pageFlip.getCurrentPageIndex();
+        const total = this.totalPages;
+
+        if (this.pageFlip.getOrientation() === 'portrait') {
+            this.pageCurrent.textContent = page + 1;
+        } else {
+            if (page === 0) {
+                this.pageCurrent.textContent = '1';
+            } else if (page === total - 1) {
+                this.pageCurrent.textContent = `${total}`;
+            } else {
+                const leftPage = page + 1;
+                const rightPage = Math.min(page + 2, total);
+                if (leftPage === rightPage) {
+                    this.pageCurrent.textContent = `${leftPage}`;
+                } else {
+                    this.pageCurrent.textContent = `${leftPage} - ${rightPage}`;
+                }
+            }
+        }
     }
 
     bindEvents() {
@@ -265,13 +291,13 @@ class FlipbookApp {
         });
 
         // Page Flip Event (updates UI when flip finishes)
-        this.pageFlip.on('flip', (e) => {
-            this.pageCurrent.textContent = e.data + 1;
+        this.pageFlip.on('flip', () => {
+            this.updatePageIndicator();
             this.resizeToFit();
         });
         
         // Initial state
-        this.pageCurrent.textContent = this.pageFlip.getCurrentPageIndex() + 1;
+        this.updatePageIndicator();
 
         // Button Controls - Previous / Next
         this.btnPrev.addEventListener('click', () => this.pageFlip.flipPrev());

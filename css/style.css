@@ -139,7 +139,7 @@ body {
 .flipbook {
     box-shadow: var(--book-shadow);
     border-radius: 4px;
-    background: #0d1420; /* Dark back edge to simulate hardcover */
+    background: transparent; /* Changed from dark color to make closed covers look like single pages */
 }
 
 /* In Canvas mode, StPageFlip handles page shadows internally.

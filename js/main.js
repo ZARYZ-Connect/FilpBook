@@ -261,12 +261,29 @@ class FlipbookApp {
             scale = maxBookWidth / bookWidth;
         }
         
+        // Calculate dynamic X translation to perfectly center closed covers
+        let translateX = -50; // Default: Spine in the exact center of screen
+        
+        if (this.pageFlip.getOrientation() === 'landscape') {
+            const currentIndex = this.pageFlip.getCurrentPageIndex();
+            if (currentIndex === 0) {
+                // Front Cover: Shift left so the right-half (cover) is dead center
+                translateX = -75;
+            } else if (currentIndex === this.totalPages - 1) {
+                // Back Cover: Shift right so the left-half (back cover) is dead center
+                translateX = -25;
+            }
+        }
+        
         // Apply CSS transform to the flipbook element for flawless, unclipped centering
         this.flipbookEl.style.position = 'absolute';
         this.flipbookEl.style.left = '50%';
         this.flipbookEl.style.top = '50%';
-        this.flipbookEl.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        this.flipbookEl.style.transform = `translate(${translateX}%, -50%) scale(${scale})`;
         this.flipbookEl.style.transformOrigin = 'center center';
+        
+        // Add a smooth transition so it slides beautifully when opening/closing
+        this.flipbookEl.style.transition = 'transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)';
     }
 
     bindEvents() {
@@ -300,6 +317,7 @@ class FlipbookApp {
         // Page Flip Event (updates UI when flip finishes)
         this.pageFlip.on('flip', (e) => {
             this.pageCurrent.textContent = e.data + 1;
+            this.resizeToFit();
         });
         
         // Initial state

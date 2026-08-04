@@ -137,7 +137,7 @@ class FlipbookApp {
         // Instantly build the URL list from compressed JPEGs — no waiting for preload.
         // This removes the 2+ minute wait caused by preloading 22 MB of PNGs.
         this.resolvedImageUrls = [];
-        const cacheBuster = "v=1.8"; // Update this string to invalidate browser cache
+        const cacheBuster = "v=1.9"; // Update this string to invalidate browser cache
         for (let i = 1; i <= this.totalPages; i++) {
             this.resolvedImageUrls.push(`${this.imagesFolderPath}Page ${i}${this.imageExtension}?${cacheBuster}`);
         }
@@ -145,32 +145,6 @@ class FlipbookApp {
     }
 
     initPageFlip() {
-        // Build HTML pages dynamically for HTML mode
-        this.flipbookEl.innerHTML = '';
-        this.resolvedImageUrls.forEach((url, i) => {
-            const pageDiv = document.createElement('div');
-            pageDiv.className = 'st-page';
-            
-            // Set data-density="hard" for cover and back cover
-            if (i === 0 || i === this.resolvedImageUrls.length - 1) {
-                pageDiv.setAttribute('data-density', 'hard');
-            } else {
-                pageDiv.setAttribute('data-density', 'soft');
-            }
-            
-            const img = document.createElement('img');
-            img.src = url;
-            img.className = 'page-image';
-            img.style.width = '100%';
-            img.style.height = '100%';
-            img.style.objectFit = 'fill';
-            img.style.display = 'block';
-            img.style.pointerEvents = 'none'; // Prevent drag issues during flip
-            
-            pageDiv.appendChild(img);
-            this.flipbookEl.appendChild(pageDiv);
-        });
-
         this.pageFlip = new St.PageFlip(this.flipbookEl, {
             width: 550, 
             height: 778, 
@@ -184,8 +158,8 @@ class FlipbookApp {
             usePortrait: true  // Switch to single-page (portrait) mode on narrow screens
         });
 
-        // Use HTML mode instead of Canvas mode
-        this.pageFlip.loadFromHTML(this.flipbookEl.querySelectorAll('.st-page'));
+        // Use Canvas mode for realistic 3D paper rendering (natively supports mirrored backside with lighting effects)
+        this.pageFlip.loadFromImages(this.resolvedImageUrls);
         
         // Allow the DOM to render before applying scale
         setTimeout(() => this.resizeToFit(), 50);

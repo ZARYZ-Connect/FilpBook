@@ -157,7 +157,14 @@ body {
     left: 0;
 }
 
-/* Removed transparent override on stPageFlip internal classes to fix backside mirroring issue */
+.stf__wrapper, .stf__parent, .stf__block {
+    background: transparent !important;
+}
+
+.stf__item {
+    /* Creates the mirrored low-opacity effect on the back of the page */
+    background: rgba(255, 255, 255, 0.85) !important;
+}
 
 /* Page Content removed as Canvas handles image rendering */
 

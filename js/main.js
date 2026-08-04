@@ -137,7 +137,7 @@ class FlipbookApp {
         // Instantly build the URL list from compressed JPEGs — no waiting for preload.
         // This removes the 2+ minute wait caused by preloading 22 MB of PNGs.
         this.resolvedImageUrls = [];
-        const cacheBuster = "v=1.3"; // Update this string to invalidate browser cache
+        const cacheBuster = "v=1.4"; // Update this string to invalidate browser cache
         for (let i = 1; i <= this.totalPages; i++) {
             this.resolvedImageUrls.push(`${this.imagesFolderPath}Page ${i}${this.imageExtension}?${cacheBuster}`);
         }
@@ -168,11 +168,6 @@ class FlipbookApp {
             img.style.pointerEvents = 'none'; // Prevent drag issues during flip
             
             pageDiv.appendChild(img);
-            // Add click handler to open lightbox with full-size image
-            pageDiv.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.openLightbox(url);
-            });
             this.flipbookEl.appendChild(pageDiv);
         });
 

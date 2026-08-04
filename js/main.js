@@ -167,6 +167,11 @@ class FlipbookApp {
             img.style.pointerEvents = 'none'; // Prevent drag issues during flip
             
             pageDiv.appendChild(img);
+            // Add click handler to open lightbox with full-size image
+            pageDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.openLightbox(url);
+            });
             this.flipbookEl.appendChild(pageDiv);
         });
 

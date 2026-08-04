@@ -137,7 +137,7 @@ class FlipbookApp {
         // Instantly build the URL list from compressed JPEGs — no waiting for preload.
         // This removes the 2+ minute wait caused by preloading 22 MB of PNGs.
         this.resolvedImageUrls = [];
-        const cacheBuster = "v=1.6"; // Update this string to invalidate browser cache
+        const cacheBuster = "v=1.7"; // Update this string to invalidate browser cache
         for (let i = 1; i <= this.totalPages; i++) {
             this.resolvedImageUrls.push(`${this.imagesFolderPath}Page ${i}${this.imageExtension}?${cacheBuster}`);
         }
@@ -179,9 +179,9 @@ class FlipbookApp {
             maxShadowOpacity: 0.8,
             showPageCorners: true,
             showCover: true,
-            mobileScrollSupport: false,
+            mobileScrollSupport: true,
             flippingTime: 1100,
-            usePortrait: false  // Force landscape (two-page spread) mode always
+            usePortrait: true  // Switch to single-page (portrait) mode on narrow screens
         });
 
         // Use HTML mode instead of Canvas mode

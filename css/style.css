@@ -157,10 +157,7 @@ body {
     left: 0;
 }
 
-.stf__wrapper, .stf__parent, .stf__block, .stf__item {
-    background: transparent !important;
-    background-color: transparent !important;
-}
+/* Removed transparent override on stPageFlip internal classes to fix backside mirroring issue */
 
 /* Page Content removed as Canvas handles image rendering */
 

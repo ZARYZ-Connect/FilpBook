@@ -137,8 +137,9 @@ class FlipbookApp {
         // Instantly build the URL list from compressed JPEGs — no waiting for preload.
         // This removes the 2+ minute wait caused by preloading 22 MB of PNGs.
         this.resolvedImageUrls = [];
+        const cacheBuster = "v=1.2"; // Update this string to invalidate browser cache
         for (let i = 1; i <= this.totalPages; i++) {
-            this.resolvedImageUrls.push(`${this.imagesFolderPath}Page ${i}${this.imageExtension}`);
+            this.resolvedImageUrls.push(`${this.imagesFolderPath}Page ${i}${this.imageExtension}?${cacheBuster}`);
         }
         return Promise.resolve();
     }
